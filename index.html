@@ -1,179 +1,47 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title></title>
+    <script type="text/javascript">
 
-<!DOCTYPE html>
-<html>
+        window.addEventListener("DOMContentLoaded", function () {
+            // Grab elements, create settings, etc.
+            var canvas = document.getElementById("canvas"),
+		context = canvas.getContext("2d"),
+		video = document.getElementById("video"),
+		videoObj = { "video": true },
+		errBack = function (error) {
+		    console.log("Video capture error: ", error.code);
+		};
 
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-		<meta name="format-detection" content="telephone=no">
-		<meta name="format-detection" content="address=no;email=no">
-		<title>拍照demo</title>
-		<style>
-			#imgDiv{
-				width:400px;
-				height:400px;
-			}
-			#imgContent{
-				width: 400px;
-				height:400px;
-			}
-			#vContent{
-				width: 400px;
-				height:400px;
-			}
-		</style>
-		<script src="./js/jquery-1.9.1.min.js"></script>
-		<script src="./js/browser-md5-file.js"></script>
-		<script>
-			<!-- 限制手机端访问 -->
-			$(function() { 
-				var u = navigator.userAgent;
-				var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1; //android终端
-				var isiOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
-				if(isAndroid==false && isiOS==false){
-					window.location.href="info.html";
-				}
-			});
-			<!-- 按钮事件 -->
-			 jQuery(function () { 
-				$("#paizhao").click(function () { 
-					$("#up").click(); 
-					
-				}); 
-				$("#luxiang").click(function () { 
-					$("#up2").click(); 
-				}); 
-			}); 
-		
-			<!-- 图片 -->
-			function imageinputChange(){
-
-				var protocol=window.location.protocol;;
-				var hostname=window.location.host;
-				var globalPath = protocol+"//"+hostname;
-				
-				<!-- 获取文件md5 -->
-				var fileforinput = $("#imgForm").find("input")[0].files[0];
-				browserMD5File(fileforinput, function (err, md5) {
-					<!-- 请求servlet -->
-					var formDom = new FormData();
-					formDom.append("file",$("#imgForm").find("input")[0].files[0]);
-					formDom.append("filemd5",md5);
-					formDom.append("T","1");
-					$.ajax({
-						url: "../program/CJXUploadServlet",
-						type: "POST",
-						dataType: "json",
-						data:formDom,
-						cache: false,
-						processData: false,
-						//必须false才会自动加上正确的Content-Type 
-						contentType: false,
-						success: function(res) {
-							console.log(res.Rst.Scd);
-							if(res.Rst.Scd!=0){
-								//获取文件
-								var file = $("#imgForm").find("input")[0].files[0];
-								//创建读取文件的对象
-								var reader = new FileReader();
-							 
-								//创建文件读取相关的变量
-								var imgFile;
-							 
-								//为文件读取成功设置事件
-								reader.onload=function(e) {
-									imgFile = e.target.result;
-									$("#imgContent").attr('src', imgFile);
-								};
-							 
-								//正式读取文件
-								reader.readAsDataURL(file);
-							}else{
-								alert(res.Rst.Msg);
-							}
-						},
-						error: function(e) { 
-							
-						}
-
-					})
-				
-				
-				});
-			}
-			<!-- 录像 -->
-			function videoInputChange(){
-
-				var protocol=window.location.protocol;;
-				var hostname=window.location.host;
-				var globalPath = protocol+"//"+hostname;
-				
-				<!-- 获取文件md5 -->
-				var fileforinput = $("#imgForm").find("input")[1].files[0];
-				browserMD5File(fileforinput, function (err, md5) {
-					<!-- 请求servlet -->
-					var formDom = new FormData();
-					formDom.append("file",$("#imgForm").find("input")[1].files[0]);
-					formDom.append("filemd5",md5);
-					formDom.append("T","1");
-					$.ajax({
-						url: "../program/CJXUploadServlet",
-						type: "POST",
-						dataType: "json",
-						data:formDom,
-						cache: false,
-						processData: false,
-						//必须false才会自动加上正确的Content-Type 
-						contentType: false,
-						success: function(res) {
-							if(res.Rst.Scd!=0){
-								//获取文件
-								var file = $("#imgForm").find("input")[1].files[0];
-								//创建读取文件的对象
-								var reader = new FileReader();
-							 
-								//创建文件读取相关的变量
-								var imgFile;
-							 
-								//为文件读取成功设置事件
-								reader.onload=function(e) {
-									imgFile = e.target.result;
-									$("#vContent2").attr('src', imgFile);
-								};
-							 
-								//正式读取文件
-								reader.readAsDataURL(file);
-							}else{
-								alert(res.Rst.Msg);
-							}
-						},
-						 error: function(e) { 
-							
-						}
-
-					})
-				});
-			}
-		</script>
-	</head>
-	<body>
-		<div style="width:260px; height:30px;"></div>
-		<button id="paizhao" style="width:100%;height:30px">拍照</button>
-		<div style="width:260px; height:30px;"></div>
-		<button id="luxiang" style="width:100%;height:30px">录像</button>
-		<form id="imgForm">
-			<input type="file" id="up" accept="image/*" capture="camera" style="display:none" onchange="imageinputChange()"></input>
-			<input type="file" id="up2" accept="video/*" capture="camera" style="display:none" onchange="videoInputChange()"></input>
-		</form>
-		<div style="width:260px; height:30px;"></div>
-		<h3>视频</h3>
-		<video id="vContent2" src="" controls="controls" width="400" height="200"></video>
-		<h3>图片</h3>
-		<div class="addBorder" id="imgDiv"  align="center" border="1px">
-			<img id="imgContent">
-			<video id="vContent"></video>
-		</div>
-	</body>
-
+            // 
+            if (navigator.getUserMedia) { // Standard
+                navigator.getUserMedia(videoObj, function (stream) {
+                    video.src = stream;
+                    video.play();
+                }, errBack);
+            } else if (navigator.webkitGetUserMedia) { // WebKit-prefixed引擎
+                navigator.webkitGetUserMedia(videoObj, function (stream) {
+                    video.src = window.webkitURL.createObjectURL(stream);
+                    video.play();
+                }, errBack);
+            }
+            else if (navigator.mozGetUserMedia) { // Firefox-prefixed
+                navigator.mozGetUserMedia(videoObj, function (stream) {
+                    video.src = window.URL.createObjectURL(stream);
+                    video.play();
+                }, errBack);
+            }
+        }, false);
+    
+    </script>
+</head>
+     <body>
+    <form id="form1" runat="server">
+    <div>
+        <video id="video" width="640" height="480" autoplay></video>
+        <button id="snap">Snap Photo</button>
+        <canvas id="canvas" width="640" height="480"></canvas>
+    </div>
+    </form>
+</body>
 </html>
-
